@@ -11,17 +11,6 @@ typedef struct record {
 	int uid2;
 } Record;
 
-typedef struct result_acc {
-	unsigned int max;
-	unsigned long num_friends;
-	unsigned long total_uids;
-} Result_Acc;
-
-typedef struct temp_acc {
-	int uid;
-	unsigned long num_friends;
-} Temp_Acc;
-
 void validate_args(int, char**, int expected);
 
 void alloc_check(void*);

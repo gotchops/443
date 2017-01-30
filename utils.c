@@ -65,7 +65,7 @@ void alloc_check(void* ptr)
 
 void validate_mode_on_file(char* file_name, FILE* fp, char* mode) {
 	char* mode_str = NULL;
-	if (strcmp(mode, "r") == 0) {
+	if (strcmp(mode, "r") == 0 || strcmp(mode, "rb") == 0) {
 		mode_str = "reading";
 	} else {
 		mode_str = "writing";
