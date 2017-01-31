@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <time.h>
 
-#define MAX_CHARS_PER_LINE 17
+#define MAX_CHARS_PER_LINE 1024
 
 typedef struct record {
 	int uid1;
@@ -25,6 +25,8 @@ typedef struct temp_acc {
 	int uid;
 	unsigned long num_friends;
 } Temp_Acc;
+
+void validate_x(char*);
 
 void validate_args(int, char**, int expected);
 
