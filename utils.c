@@ -45,12 +45,26 @@ void validate_block_size(char* bsize_str)
 	}
 }
 
+void validate_x(char* x_str) {
+	long int x = atol(x_str);
+	if (x <= 0) {
+		fprintf(
+			stderr,
+			"Please provide a valid X number.\n"
+		);
+		exit(-1);
+	}
+}
+
 void validate_args(int num_args, char** argv, int expected)
 {
 	validate_arg_num(expected, num_args);
 	validate_file_path(argv[1]);
 	if (expected > 1) {
 		validate_block_size(argv[2]);
+		if (expected == 3) {
+			validate_x(argv[3]);
+		}
 	}
 }
 
@@ -90,6 +104,10 @@ long int get_block_size(char** argv) {
 	return atol(argv[2]);
 }
 
+long int get_x(char** argv) {
+	return atol(argv[3]);
+}
+
 int get_delim_index(char* line) {
 	int i = 0;
 	int len = strlen(line);
@@ -126,4 +144,65 @@ void str_array_to_record(char** str_array, Record* record) {
 
 	record->uid1 = uid1;
 	record->uid2 = uid2;
+}
+
+off_t get_file_size(char* file_name) {
+	struct stat st;
+	
+	int stat_err = stat(file_name, &st);
+	if (stat_err == -1) {
+		/* Handle error */
+	}
+
+	return st.st_size;
+}
+
+void validate_file_size(off_t size) {
+	if (size % sizeof(Record) != 0) {
+		/* Handle error */
+	}
+}
+
+void build_result_by_block(Record* buffer, int rpb, FILE* f, Result_Acc* res, Temp_Acc* temp) {
+	int records_read = 0;
+	while((records_read = fread(buffer, sizeof(Record), rpb, f)) > 0) {
+		int i;
+		for(i = 0; i < records_read; i++) {
+			Record record = buffer[(i*sizeof(Record))];
+			int uid = record.uid1;
+			build_result_acc(uid, temp, res);
+		}
+	}
+}
+
+void init_result_acc(Result_Acc* acc) {
+	acc->max = 0;
+	acc->num_friends = 0;
+	acc->total_uids = 0;
+}
+
+unsigned long calc_avg(Result_Acc* res) {
+	return res->num_friends / res->total_uids;
+}
+
+void init_temp_acc(Temp_Acc* acc) {
+	acc->uid = -1;
+	acc->num_friends = 0;
+}
+
+void build_result_acc(int uid, Temp_Acc* temp, Result_Acc* res) {
+	if (uid != temp->uid) {
+		res->total_uids++;
+		temp->uid = uid;
+		temp->num_friends = 1;
+	} else {
+		temp->num_friends++;
+	}
+
+	unsigned long tnum_friends = temp->num_friends;
+	if (res->max < tnum_friends) {
+		res->max = tnum_friends;
+	}
+
+	res->num_friends++;
 }

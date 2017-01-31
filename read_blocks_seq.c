@@ -1,4 +1,4 @@
-#include "read_seq.h"
+#include "utils.h"
 
 int main(int argc, char** argv) {
 	validate_args(argc-1, argv, 2);
@@ -21,15 +21,7 @@ int main(int argc, char** argv) {
 	Temp_Acc temp;
 	init_temp_acc(&temp);
 
-	int records_read = 0;
-	while((records_read = fread(buffer, sizeof(Record), records_per_block, fp_read)) > 0) {
-		int i;
-		for(i = 0; i < records_read; i++) {
-			Record record = buffer[(i*sizeof(Record))];
-			int uid = record.uid1;
-			build_result_acc(uid, &temp, &res);
-		}
-	}
+	build_result_by_block(buffer, records_per_block, fp_read, &res, &temp);
 
 	unsigned int max = res.max;
 	unsigned long avg = calc_avg(&res);

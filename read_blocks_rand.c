@@ -1,11 +1,14 @@
 #include "utils.h"
 
 int main(int argc, char** argv) {
-	validate_args(argc-1, argv, 1);
+	validate_args(argc-1, argv, 3);
 
 	FILE* fp_read = NULL;
 
+	long int block_size = get_block_size(argv);
+	int records_per_block = block_size / (long int) sizeof(Record);
 	char* file_name = get_file_name(argv);
+	long int x = get_x(argv);
 
 	validate_mode_on_file(file_name, fp_read, "rb");
 
@@ -13,7 +16,7 @@ int main(int argc, char** argv) {
 	validate_file_size(size);
 
 	/* Allocate buffer for one block. */
-	Record* buffer = (Record*) calloc(size, sizeof(char));
+	Record* buffer = (Record*) calloc(records_per_block, sizeof(Record));
 	alloc_check(buffer);
 
 	Result_Acc res;
@@ -22,16 +25,15 @@ int main(int argc, char** argv) {
 	Temp_Acc temp;
 	init_temp_acc(&temp);
 
-	size_t read = fread(buffer, sizeof(off_t), size, fp_read);
-	if (read != size) {
-		/* Handle error */
-	}
+	srand(time(NULL));
+	long int r;
+	long int num_blocks_in_file = size / block_size;
 
-	off_t i;
-	for(i = 0; i < size; i++) {
-		Record record = buffer[(i*sizeof(Record))];
-		int uid = record.uid1;
-		build_result_acc(uid, &temp, &res);
+	long int i;
+	for (i=0; i<x; i++) {
+		r = rand() % num_blocks_in_file;
+		fseek(fp_read, r, SEEK_SET);
+		build_result_by_block(buffer, records_per_block, fp_read, &res, &temp);
 	}
 
 	unsigned int max = res.max;
@@ -41,6 +43,6 @@ int main(int argc, char** argv) {
 
 	fclose(fp_read);
 	free(buffer);
-	
+
 	return 0;
 }
