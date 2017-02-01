@@ -2,18 +2,18 @@
 
 int main(int argc, char** argv) {
 	if (argc != 2) {
-		/* handle error */
+		return -1;
 	}
 
 	long int x = atol(argv[1]);
 	if (x <= 0) {
-		/* handle error */
+		return -1;
 	}
 
 	FILE* fp_write = NULL;
 	char* file_name = "records.dat";
 
-	validate_mode_on_file(file_name, fp_write, "wb");
+	validate_mode_on_file(file_name, &fp_write, "r+b");
 
 	off_t size = get_file_size(file_name);
 	validate_file_size(size);
@@ -25,6 +25,12 @@ int main(int argc, char** argv) {
 	/* Allocate buffer for one block. */
 	Record* buffer = (Record*) calloc(num_records_in_file, sizeof(Record));
 	alloc_check(buffer);
+	
+	fseek(fp_write, 0, SEEK_SET);
+	size_t read = fread(buffer, size, 1, fp_write);
+	if (read != size) {
+		return -1;
+	}
 
 	Record record;
 	record.uid1 = 1;

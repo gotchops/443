@@ -32,7 +32,7 @@ void validate_args(int, char**, int expected);
 
 void alloc_check(void*);
 
-void validate_mode_on_file(char*, FILE*, char*);
+void validate_mode_on_file(char*, FILE**, char*);
 
 char* get_file_name(char**);
 
@@ -54,7 +54,7 @@ void build_result_by_block(Record*, int, FILE*, Result_Acc*, Temp_Acc*);
 
 void init_result_acc(Result_Acc*);
 
-unsigned long calc_avg(Result_Acc*);
+float calc_avg(Result_Acc*);
 
 void init_temp_acc(Temp_Acc*);
 

@@ -10,13 +10,13 @@ int main(int argc, char** argv) {
 	char* file_name = get_file_name(argv);
 	long int x = get_x(argv);
 
-	validate_mode_on_file(file_name, fp_read, "rb");
+	validate_mode_on_file(file_name, &fp_read, "rb");
 
 	off_t size = get_file_size(file_name);
 	validate_file_size(size);
 
 	/* Allocate buffer for one block. */
-	Record* buffer = (Record*) calloc(size, sizeof(char));
+	Record* buffer = (Record*) calloc(size, sizeof(off_t));
 	alloc_check(buffer);
 
 	Result_Acc res;
@@ -40,16 +40,16 @@ int main(int argc, char** argv) {
 
 		int j;
 		for (j=0; j<records_per_block; j++) {
-			Record record = buffer[r + (j*sizeof(Record))];
+			Record record = buffer[r + j];
 			int uid = record.uid1;
 			build_result_acc(uid, &temp, &res);
 		}
 	}
 
 	unsigned int max = res.max;
-	unsigned long avg = calc_avg(&res);
+	float avg = calc_avg(&res);
 
-	printf("Max: %u\nAvg: %lu", max, avg);
+	printf("Max: %u\nAvg: %.2f\n", max, avg);
 
 	fclose(fp_read);
 	free(buffer);

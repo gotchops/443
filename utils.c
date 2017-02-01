@@ -77,7 +77,7 @@ void alloc_check(void* ptr)
 	}
 }
 
-void validate_mode_on_file(char* file_name, FILE* fp, char* mode) {
+void validate_mode_on_file(char* file_name, FILE** fp, char* mode) {
 	char* mode_str = NULL;
 	if (strcmp(mode, "r") == 0 || strcmp(mode, "rb") == 0) {
 		mode_str = "reading";
@@ -85,7 +85,7 @@ void validate_mode_on_file(char* file_name, FILE* fp, char* mode) {
 		mode_str = "writing";
 	}
 
-	if (!(fp = fopen(file_name, mode))) {
+	if (!(*fp = fopen(file_name, mode))) {
 		fprintf(
 			stderr,
 			"Could not open file \"%s\" for %s.\n",
@@ -151,27 +151,34 @@ off_t get_file_size(char* file_name) {
 	
 	int stat_err = stat(file_name, &st);
 	if (stat_err == -1) {
-		/* Handle error */
+		fprintf(
+			stderr,
+			"Could not get files size for \"%s\".\n",
+			file_name
+		);
+		exit(-1);
 	}
 
 	return st.st_size;
 }
 
 void validate_file_size(off_t size) {
-	if (size % sizeof(Record) != 0) {
-		/* Handle error */
+	if ((size % sizeof(Record) != 0) || size == 0) {
+		fprintf(
+			stderr,
+			"Please provide a file with a valid size.\n"
+		);
+		exit(-1);
 	}
 }
 
 void build_result_by_block(Record* buffer, int rpb, FILE* f, Result_Acc* res, Temp_Acc* temp) {
-	int records_read = 0;
-	while((records_read = fread(buffer, sizeof(Record), rpb, f)) > 0) {
-		int i;
-		for(i = 0; i < records_read; i++) {
-			Record record = buffer[(i*sizeof(Record))];
-			int uid = record.uid1;
-			build_result_acc(uid, temp, res);
-		}
+	int records_read = fread(buffer, sizeof(Record), rpb, f);
+	int i;
+	for(i = 0; i < records_read; i++) {
+		Record record = buffer[i];
+		int uid = record.uid1;
+		build_result_acc(uid, temp, res);
 	}
 }
 
@@ -181,8 +188,8 @@ void init_result_acc(Result_Acc* acc) {
 	acc->total_uids = 0;
 }
 
-unsigned long calc_avg(Result_Acc* res) {
-	return res->num_friends / res->total_uids;
+float calc_avg(Result_Acc* res) {
+	return ((float) res->num_friends) / res->total_uids;
 }
 
 void init_temp_acc(Temp_Acc* acc) {

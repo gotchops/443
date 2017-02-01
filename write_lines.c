@@ -8,8 +8,8 @@ int main(int argc, char** argv) {
 
 	char* file_name = get_file_name(argv);
 
-	validate_mode_on_file(file_name, fp_read, "r");
-	validate_mode_on_file("write_lines_output.csv", fp_write, "wb");
+	validate_mode_on_file(file_name, &fp_read, "r");
+	validate_mode_on_file("write_lines_output.csv", &fp_write, "wb");
 
 	char current_line[MAX_CHARS_PER_LINE];
 
